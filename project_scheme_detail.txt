@@ -1,0 +1,17 @@
+posts/
+├── router.py           # Маршруты FastAPI
+├── schemas/            # Папка со схемами
+│   ├── requests.py     # Pydantic для входящих данных
+│   ├── responses.py    # Pydantic для исходящих данных
+│   └── core.py         # Базовые схемы
+├── models.py           # SQLAlchemy модели
+├── dependencies.py     # Зависимости (DB, auth, etc)
+├── constants.py        # Константы
+├── exceptions.py       # Исключения
+├── services/           # Папка с сервисами
+│   ├── post_service.py # Сервис постов
+│   └── comment_service.py # Сервис комментариев
+└── utils/              # Папка с утилитами
+    ├── validators.py   # Валидаторы
+    └── helpers.py      # Хелперы
+    

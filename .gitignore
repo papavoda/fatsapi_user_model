@@ -1,0 +1,14 @@
+**/.idea
+*.pyc
+*cache
+*.env*
+*.directory
+**/.venv
+**/media
+*alembic*
+#!**/migrations/__init__.py
+__pycache__/
+*.sql
+TODO
+blog
+menu
