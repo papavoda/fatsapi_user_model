@@ -1,0 +1,4 @@
+Move all passwords func in Auth services
+Request Limiter with redis
+Delete user
+Logout

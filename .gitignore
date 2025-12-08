@@ -5,10 +5,9 @@
 *.directory
 **/.venv
 **/media
-
-#!**/migrations/__init__.py
+# *alembic*
 __pycache__/
 *.sql
-TODO
+# TODO
 blog
 menu
