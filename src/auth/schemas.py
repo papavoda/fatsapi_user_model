@@ -39,7 +39,7 @@ class UserResponse(BaseModel):
     email: EmailStr | None
     date_joined: datetime
     last_login: datetime | None
-    role: UserRole | None
+    # role: UserRole | None
     
     class Config:
         from_attributes = True

@@ -12,7 +12,7 @@ from src.dependencies import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register", response_model=Token, status_code=201)
+@router.post("/register", response_model=UserResponse, status_code=201)
 @limiter.limit("3/minute")
 async def register(
     request: Request,
@@ -30,17 +30,17 @@ async def register(
         
         # Создание пользователя
         user = await UserService.create_user(db, user_create)
-        
+        return user
         # Создание токенов
-        access_token, refresh_token = AuthService.create_tokens(user.id)
+        # access_token, refresh_token = AuthService.create_tokens(user.id)
         
         # Фоновая задача (welcome email)
-        background_tasks.add_task(send_welcome_email, user.email)
+       # background_tasks.add_task(send_welcome_email, user.email)
         
-        return Token(
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
+        # return Token(
+        #     access_token=access_token,
+        #     refresh_token=refresh_token
+        # )
     
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -99,14 +99,18 @@ async def refresh_token(
 async def get_current_user_info(
     current_user: CurrentUserDep
 ):
-    """Получить информацию о текущем пользователе"""
+    if not current_user:
+        raise HTTPException(401, detail="Not authenticated")
+    else:
+        return current_user
+    # """Получить информацию о текущем пользователе"""
     # print(f"\n=== DEBUG Current User ===")
     # print(f"Type: {type(current_user)}")
     # print(f"Class: {current_user.__class__.__name__}")
     # print(f"Module: {current_user.__class__.__module__}")
     # print(f"MRO: {current_user.__class__.__mro__}")
     
-    # # Проверяем все атрибуты
+    # Проверяем все атрибуты
     # attrs = ['id', 'username']
     # for attr in attrs:
     #     if hasattr(current_user, attr):
@@ -117,15 +121,15 @@ async def get_current_user_info(
     
     # # Пробуем конвертировать
     # try:
-    #     result = UserRead.model_validate(current_user)
+    #     result = UserResponse.model_validate(current_user)
     #     print(f"\n✓ Validation successful!")
     #     return result
     # except Exception as e:
     #     print(f"\n✗ Validation error: {e}")
     #     print(f"Error type: {type(e)}")
-    #     raise
+    #     raise HTTPException(status_code=500, detail=str(e))
     
-    return current_user
+    # return current_user
 
 @router.post("/logout")
 async def logout():

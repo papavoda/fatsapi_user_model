@@ -67,6 +67,7 @@ class AuthService:
         
         payload = {
             "sub": str(user_id),
+            # "jti": str(uuid.uuid4()),
             "exp": expire,
             "type": token_type,
             "iat": current_utc_time

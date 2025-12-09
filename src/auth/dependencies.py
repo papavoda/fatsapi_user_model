@@ -17,6 +17,7 @@ async def get_current_user(
 ) -> Optional[User]:
     """Получение текущего пользователя из токена"""
     if not credentials:
+        # print("**** DEBUG: credentials is None")
         return None
 
     try:

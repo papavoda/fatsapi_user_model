@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "password"
     DB_NAME: str = "db"
 
+    ADMIN_NAME: str = ""
+    ADMIN_PASSWORD: str = ""
+
 # Настройки для production (можно вынести в env)
     ARGON2_TIME_COST: int = 3          # opslimit
     ARGON2_MEMORY_COST: int = 65536    # memlimit (64MB)

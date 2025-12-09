@@ -42,8 +42,6 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=150)
     last_name: Optional[str] = Field(None, max_length=150)
     email: Optional[EmailStr] = Field(None, max_length=254)
-    is_superuser: Optional[bool] = None
-    is_staff: Optional[bool] = None
     is_active: Optional[bool] = None
     password: Optional[str] = Field(None, min_length=8, max_length=128)
 
@@ -54,6 +52,7 @@ class UserUpdate(BaseModel):
 class UserRead(UserBase):
     id: uuid.UUID
     last_login: Optional[datetime] = None
-    date_joined: datetime    
+    date_joined: datetime
+    role: UserRole 
     model_config = ConfigDict(from_attributes=True)  # Pydantic v2 style
     

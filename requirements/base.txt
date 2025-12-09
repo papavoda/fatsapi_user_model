@@ -33,8 +33,6 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 packaging==25.0
 passlib==1.7.4
-psycopg==3.2.13
-psycopg-binary==3.2.13
 pyasn1==0.6.1
 pycparser==2.23
 pydantic==2.12.5

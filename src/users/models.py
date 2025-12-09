@@ -40,15 +40,9 @@ class User(Base):
     __tablename__ = "users"
     
     # Primary key - автоинкремент по умолчанию в SQLAlchemy
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4) 
     password: Mapped[str] = mapped_column(String(255), nullable=False)
-    
-    # Boolean поля с default значениями
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_staff: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     # User fields
     username: Mapped[str] = mapped_column(
         String(150), 
@@ -64,7 +58,7 @@ class User(Base):
     )
     first_name: Mapped[str] = mapped_column(String(150), default="", nullable=True)
     last_name: Mapped[str] = mapped_column(String(150), default="", nullable=True)
-    
+ 
     # Timestamps
     date_joined: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -83,7 +77,16 @@ class User(Base):
     )
 
 
+    #token_version: Mapped[int] = mapped_column(Integer, default=1)  # ← Ключевое поле!
     
+
+    # def increment_token_version(self):
+    #     """Увеличить версию токена (при смене пароля/принудительном logout)"""
+    #     self.token_version += 1
+    #     if self.token_version > 100:
+    #         self.token_version = 1
+        # self.updated_at = datetime.now(timezone.utc)
+
     # Методы для работы с паролями
     # def set_password(self, password: str):
     #     """Установка пароля с хешированием"""

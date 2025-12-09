@@ -154,3 +154,7 @@ class UserService:
             await db.commit()
         
         return user
+    
+
+
+   # user =UserService.create_user
