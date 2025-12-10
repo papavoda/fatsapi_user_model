@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 
 from src.users.models import UserRole
-from src.users.schemas import UserCreate, UserRead
+from src.users.schemas import UserCreate, UserRead, UserUpdate
 from src.users.service import UserService
 from src.database import get_db
 from src.auth.dependencies  import require_role
@@ -41,7 +41,17 @@ async def create_user(
     db: DatabaseDep,
 
 ) :
-
+    """
+    Создание нового пользователя в системе.
+    
+    - **username**: Уникальное имя пользователя (3-150 символов)
+    - **email**: Уникальный email адрес
+    - **password**: Пароль (минимум 8 символов)
+    - **first_name**: Имя пользователя
+    - **last_name**: Фамилия пользователя
+    - **is_active**: Активен ли пользователь (по умолчанию True)
+    Возвращает созданного пользователя без поля password.
+    """
     try:
         # Создаем пользователя через сервис
         user = await UserService.create_user(db, user_data)
@@ -93,10 +103,60 @@ async def get_users_list(
     users = await UserService.get_users_list(db)
     return list(users)
 
+@admin_router.patch(
+    "/{user_id}",
+    response_model=UserRead,
+    status_code=status.HTTP_200_OK,
+    summary="Обновить пользователя по ID",
+    responses={
+        200: {"description": "Пользователь успешно обновлен"},
+        404: {"description": "Пользователь не найден"}
+    }
+)
+async def update_user_by_id(
+    id: uuid.UUID,
+    user_data: UserUpdate,
+    db: DatabaseDep
+) -> UserRead:
+    """Обновление пользователя по ID"""
+    user = await UserService.get_user_by_id(db, id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {id} not found"
+        )
+    try:
+        user =await UserService.update_user(db, id, user_data)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    
+    return UserRead.model_validate(user)
 
 
-
-# users_router = APIRouter(prefix="/users", tags=["Users"])
+@admin_router.delete(
+    "/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Удалить пользователя по ID",
+    responses={
+        204: {"description": "Пользователь успешно удален"},
+        404: {"description": "Пользователь не найден"}
+    }
+)
+async def delete_user_by_id(
+    id: uuid.UUID,
+    db: DatabaseDep
+) -> None:
+    """Удаление пользователя по ID"""
+    user = await UserService.get_user_by_id(db, id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {id} not found"
+        )
+    await UserService.delete_user(db, id)
 
 
 
@@ -106,14 +166,3 @@ async def get_users_list(
 # -----------------------------------------------------------
 
 
-    """
-    Создание нового пользователя в системе.
-    
-    - **username**: Уникальное имя пользователя (3-150 символов)
-    - **email**: Уникальный email адрес
-    - **password**: Пароль (минимум 8 символов)
-    - **first_name**: Имя пользователя
-    - **last_name**: Фамилия пользователя
-    - **is_active**: Активен ли пользователь (по умолчанию True)
-    Возвращает созданного пользователя без поля password.
-    """

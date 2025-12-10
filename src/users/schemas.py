@@ -22,8 +22,8 @@ class UserBase(BaseModel):
 # Create (POST)
 # -----------------------------
 class UserCreate(BaseModel):
-    username: str = Field(..., max_length=150,pattern=r"^[a-z0-9\-]+$", examples=["username"]) 
-    password: str = Field(..., max_length=128)
+    username: str = Field(..., min_length=3, max_length=150,pattern=r"^[a-z0-9\-]+$", examples=["username"]) 
+    password: str = Field(..., min_length=8, max_length=128)
     # email: EmailStr = Field(..., max_length=254)
     # role: Optional[UserRole] = Field(default=UserRole.USER)
     
@@ -38,7 +38,7 @@ class UserCreate(BaseModel):
 # Update (PATCH, partial)
 # -----------------------------
 class UserUpdate(BaseModel):
-    username: Optional[str] = Field(None, max_length=150)
+    username: Optional[str] = Field(None, min_length=3, max_length=150, pattern=r"^[a-z0-9\-]+$")
     first_name: Optional[str] = Field(None, max_length=150)
     last_name: Optional[str] = Field(None, max_length=150)
     email: Optional[EmailStr] = Field(None, max_length=254)

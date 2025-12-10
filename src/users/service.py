@@ -5,7 +5,7 @@ from sqlalchemy import select
 from typing import Optional
 
 from src.users.models import User, UserRole
-from src.users.schemas import UserCreate
+from src.users.schemas import UserCreate, UserUpdate
 from src.users.validators import password_validator
 
 
@@ -47,7 +47,6 @@ class UserService:
         return password_validator.verify_password(plain_password, hashed_password)
     
     
-
     @staticmethod
     async def create_user(db: AsyncSession, data: UserCreate) -> User:
         """Создание нового пользователя"""
@@ -62,7 +61,7 @@ class UserService:
         # Оценка сложности пароля (опционально)
         score, advice = password_validator.get_password_strength(data.password)
         
-        print(f"DEBUG ----- Score: {score}, Advice: {advice}")
+        # print(f"DEBUG ----- Score: {score}, Advice: {advice}")
         if score < 3:  # Если пароль слабее "хорошего"
             raise ValueError(f"Слабый пароль. {advice}")
         
@@ -101,30 +100,53 @@ class UserService:
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
 
-    # @staticmethod
-    # async def authenticate_user(
-    #     db: AsyncSession, 
-    #     identifier: str,  # username или email
-    #     password: str
-    # ) -> Optional[User]:
-    #     """Аутентификация пользователя"""
-    #     # Ищем по username или email
-    #     stmt = select(User).where(
-    #         (User.username == identifier) | (User.email == identifier)
-    #     )
-    #     result = await db.execute(stmt)
-    #     user = result.scalar_one_or_none()
+    @staticmethod
+    async def update_user(db: AsyncSession, id: uuid.UUID, data: UserUpdate) -> User:
+        """Обновление пользователя по ID"""
+        """Обновить пункт меню"""
+        update_data = data.model_dump(exclude_unset=True)
         
-    #     if not user or not user.check_password(password):
-    #         return None
+        if not update_data:
+            raise ValueError("No data provided for update")
         
-    #     # Если параметры хеширования устарели, перехешируем
-    #     if user.needs_password_rehash():
-    #         user.set_password(password)
-    #         await db.commit()
+        if "password" in update_data:
+            # Оценка сложности пароля (опционально)
+            score, advice = password_validator.get_password_strength(update_data["password"])
+            
+            # print(f"DEBUG ----- Score: {score}, Advice: {advice}")
+            if score < 3:  # Если пароль слабее "хорошего"
+                raise ValueError(f"Слабый пароль. {advice}")
+            
+            # Хеширование пароля
+            hashed_password = UserService.hash_password(update_data["password"])     
+            update_data["password"] = hashed_password
+            
         
-    #     return user
-
+        if "username" in update_data:
+            if await UserService.is_username_taken(db, update_data["username"]):
+                raise ValueError(f"Username '{update_data['username']}' уже используется")
+        
+        user = await db.get(User, id)
+        if not user:
+            raise ValueError(f"User with ID {id} not found")
+        
+        for field, value in update_data.items():
+            setattr(user, field, value)
+        
+        await db.commit()
+        await db.refresh(user)
+        return user
+        
+    @staticmethod
+    async def delete_user(db: AsyncSession, id: uuid.UUID) -> None:
+        """Удаление пользователя по ID"""
+        user = await db.get(User, id)
+        if user:
+            await db.delete(user)
+            await db.commit()
+        else:
+            raise ValueError(f"User with ID {id} not found")
+        
     @staticmethod
     async def get_users_list(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
         """Получение списка пользователей с пагинацией"""
@@ -157,4 +179,4 @@ class UserService:
     
 
 
-   # user =UserService.create_user
+   
