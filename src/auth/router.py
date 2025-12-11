@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.schemas import Token, UserLogin, UserRegister, UserResponse
@@ -78,11 +79,25 @@ async def refresh_token(
     db: AsyncSession = Depends(get_db)
 ):
     """Обновление access токена"""
-    user_id = AuthService.decode_token(refresh_token)
+    # 1. Получаем claims и ошибку
+    claims, error = AuthService.verify_token(refresh_token)
+    
+    # print(f"DEBUG - Claims: {claims}")
+    # print(f"DEBUG - Error: {error}")
+    
+    # 2. Проверяем ошибку
+    if error:
+        raise HTTPException(status_code=401, detail=error)
+    
+    if not claims:
+        raise HTTPException(status_code=401, detail="Invalid token structure")
+    
+    # 3. получаем user_id
+    user_id = uuid.UUID(claims["sub"])   
     
     if not user_id:
         raise HTTPException(401, detail="Invalid refresh token")
-    
+    # print(f"DEBUG - User ID: {user_id}")
     user = await db.get(User, user_id)
     if not user or not user.is_active:
         raise HTTPException(401, detail="User not found or inactive")
@@ -103,33 +118,7 @@ async def get_current_user_info(
         raise HTTPException(401, detail="Not authenticated")
     else:
         return current_user
-    # """Получить информацию о текущем пользователе"""
-    # print(f"\n=== DEBUG Current User ===")
-    # print(f"Type: {type(current_user)}")
-    # print(f"Class: {current_user.__class__.__name__}")
-    # print(f"Module: {current_user.__class__.__module__}")
-    # print(f"MRO: {current_user.__class__.__mro__}")
     
-    # Проверяем все атрибуты
-    # attrs = ['id', 'username']
-    # for attr in attrs:
-    #     if hasattr(current_user, attr):
-    #         val = getattr(current_user, attr)
-    #         print(f"{attr}: {val} (type: {type(val).__name__})")
-    #     else:
-    #         print(f"{attr}: MISSING!")
-    
-    # # Пробуем конвертировать
-    # try:
-    #     result = UserResponse.model_validate(current_user)
-    #     print(f"\n✓ Validation successful!")
-    #     return result
-    # except Exception as e:
-    #     print(f"\n✗ Validation error: {e}")
-    #     print(f"Error type: {type(e)}")
-    #     raise HTTPException(status_code=500, detail=str(e))
-    
-    # return current_user
 
 @router.post("/logout")
 async def logout():

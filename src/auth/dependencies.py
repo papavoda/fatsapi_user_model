@@ -1,6 +1,6 @@
+import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import ExpiredSignatureError, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, Optional
 
@@ -21,22 +21,44 @@ async def get_current_user(
         return None
 
     try:
-        user_id = AuthService.decode_token(credentials.credentials)
-    except ExpiredSignatureError:
-        raise HTTPException(401, detail="Token expired")
-    except JWTError:
+        # 1. verify_token возвращает (claims, error)
+        claims, error = AuthService.verify_token(credentials.credentials)
+        
+        # 2. Проверяем ошибку
+        if error:
+            # Логируем ошибку если нужно
+            # print(f"Token verification failed: {error}")
+            return None
+        
+        # 3. Проверяем claims
+        if not claims:
+            return None
+        
+        # 4. Извлекаем user_id
+        user_id_str = claims.get("sub")
+        if not user_id_str:
+            return None
+        
+        # 5. Проверяем тип токена (только access token)
+        if claims.get("type") != "access":
+            return None
+        
+        # 6. Конвертируем в UUID
+        try:
+            user_id = uuid.UUID(user_id_str)
+        except ValueError:
+            return None
+        
+        # 7. Получаем пользователя
+        user = await db.get(User, user_id)
+        if not user or not user.is_active:
+            return None
+        
+        return user
+        
+    except Exception:
+        # Любая ошибка - возвращаем None
         return None
-    
-    # print("DEBUG: user_id:", user_id)
-    if not user_id:
-        return None
-    
-    user = await db.get(User, user_id)
-    if not user or not user.is_active:
-        return None
-    # print("********************************************")
-    # print("DEBUG: user:", user.id, user.username)
-    return user
 
 
 async def require_auth(
