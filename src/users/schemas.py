@@ -1,8 +1,9 @@
 # file: src/users/schemas.py
 import uuid
+from annotated_types import MaxLen, MinLen
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from src.users.models import UserRole
-from typing import Optional
+from typing import Annotated, Optional
 from datetime import datetime
 
 
@@ -10,6 +11,7 @@ from datetime import datetime
 # Base
 # -----------------------------
 class UserBase(BaseModel):
+    # username = Annotated[str, MinLen(3), MaxLen(150), Field(pattern=r"^[a-z0-9\-]+$", examples=["username"])]
     username: str = Field(..., max_length=150,pattern=r"^[a-z0-9\-]+$", examples=["username"]) 
     first_name: Optional[str] = Field(None, max_length=150)
     last_name: Optional[str] = Field(None, max_length=150)

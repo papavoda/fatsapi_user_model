@@ -103,7 +103,6 @@ class UserService:
     @staticmethod
     async def update_user(db: AsyncSession, id: uuid.UUID, data: UserUpdate) -> User:
         """Обновление пользователя по ID"""
-        """Обновить пункт меню"""
         update_data = data.model_dump(exclude_unset=True)
         
         if not update_data:
