@@ -11,7 +11,7 @@ async_engine = create_async_engine(
     pool_size=20,
     max_overflow=30,
     pool_pre_ping=True,
-    echo=True  # Включайте только для отладки
+    # echo=True  # Включайте только для отладки
 )
 
 async_session_factory = async_sessionmaker(

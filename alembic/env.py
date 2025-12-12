@@ -6,6 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
+
 from src.database import settings, Base
 
 
@@ -23,7 +24,7 @@ if config.config_file_name is not None:
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL_asyncpg)
 # add your model's MetaData object here
 # for 'autogenerate' support
-from src.menu.models import MenuItem
+# from src.menu.models import MenuItem
 from src.users.models import User
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata

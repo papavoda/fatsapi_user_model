@@ -122,8 +122,12 @@ async def get_current_user_info(
 
 @router.post("/logout")
 async def logout():
-    """Выход из системы (клиентская сторона)"""
-    return {"message": "Successfully logged out"}
+    """Выход из системы"""
+    return {
+        "success": True,
+        "message": "Logout successful. Remove tokens from client.",
+        "action": "client_side_token_removal"
+    }
 
 async def send_welcome_email(email: str):
     """Фоновая задача отправки email"""
